@@ -14,7 +14,7 @@ module "backendinstance" {
   name          = var.name
   ami           = var.ami
   instance_type = var.instance_type
-  user_data     = var.user_data_file_path
+  user_data     = "${file("${var.user_data_file_path}")}"
   key_name      = var.key_name
   tags          = var.tags
   vpc_security_group_ids = [data.terraform_remote_state.remote.outputs.sg-http-access,

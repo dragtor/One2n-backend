@@ -1,5 +1,5 @@
 #!/bin/bash
-apt update -y
+apt-get update -y
 
 echo "\n\n########### Installing NGINX #################\n\n"
 

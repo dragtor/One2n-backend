@@ -13,9 +13,9 @@ module "lbinstance" {
   name          = var.name
   ami           = var.ami
   instance_type = var.instance_type
-  user_data     = "${file("${var.user_data_file_path}")}"
-  key_name      = var.key_name
-  tags          = var.tags
+  # user_data     = "${file("${var.user_data_file_path}")}"
+  key_name = var.key_name
+  tags     = var.tags
   vpc_security_group_ids = [data.terraform_remote_state.remote.outputs.sg-http-access,
     data.terraform_remote_state.remote.outputs.sg-ssh-access,
     data.terraform_remote_state.remote.outputs.sg-https-access
@@ -24,4 +24,15 @@ module "lbinstance" {
   volume_tags       = var.volume_tags
   root_block_device = var.root_block_device
   cpu_credits       = var.cpu_credits
+  provisioner "file" {
+    source      = "./../../../userdata/base-lb-userdata.sh"
+    destination = "/tmp/script.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/script.sh",
+      "/tmp/script.sh",
+    ]
+  }
 }
