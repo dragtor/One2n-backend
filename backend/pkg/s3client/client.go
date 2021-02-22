@@ -29,6 +29,17 @@ func NewS3Iterator(s3AccssObj *s3.S3) *AwsS3Iterator {
 	}
 }
 
+func S3Service(awsAccessKey, awsSecret, token, region string) (*s3.S3, error) {
+	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
+	_, err := creds.Get()
+	if err != nil {
+		return nil, errors.New("Invalid Credentials")
+	}
+	cfg := aws.NewConfig().WithRegion(region).WithCredentials(creds)
+	svc := s3.New(session.New(), cfg)
+	return svc, nil
+}
+
 type S3DataStorageTree struct {
 	IsExist        bool
 	MapToNextLevel map[string]*S3DataStorageTree
@@ -119,17 +130,6 @@ func (s3iter *AwsS3Iterator) ListDir(path string) ([]string, error) {
 		return []string{"hell"}, nil
 	}
 	return bucketList, nil
-}
-
-func S3Service(awsAccessKey, awsSecret, token, region string) (*s3.S3, error) {
-	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
-	_, err := creds.Get()
-	if err != nil {
-		return nil, errors.New("Invalid Credentials")
-	}
-	cfg := aws.NewConfig().WithRegion(region).WithCredentials(creds)
-	svc := s3.New(session.New(), cfg)
-	return svc, nil
 }
 
 // func main() {

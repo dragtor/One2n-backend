@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/constant"
 	"log"
 	"net/http"
 	"os"
@@ -29,7 +30,7 @@ func init() {
 }
 
 type App struct {
-	// S3Access *s3.S3
+	// S3Access *
 }
 
 func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
@@ -40,10 +41,11 @@ func main() {
 	log.Printf("Initializing server\n")
 	r := mux.NewRouter()
 
-	// s3Client, err := s3Client.S3Service(accessKey, secretKey, token, region)
+	// s3Client, err := s3client.S3Service(accessKey, secretKey, token, region)
 	// if err != nil {
 	// 	log.Fatal("Falied to connect aws s3")
 	// }
+	constants.
 	t := App{}
 	r.HandleFunc("/list-bucket-content/{param:.*}", t.listBucketContent)
 	log.Printf("Server listening on port : %s", *servicePort)
