@@ -41,7 +41,7 @@ func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.Printf("Initializing server\n")
 	r := mux.NewRouter()
-	s3Client, err := pkg.S3Service()
+	s3Client, err := pkg.S3Service(accessKey, secretKey, token, region)
 	if err != nil {
 		log.Fatal("Falied to connect aws s3")
 	}
