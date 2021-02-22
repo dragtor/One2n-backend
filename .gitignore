@@ -49,3 +49,4 @@ override.tf.json
 .terraformrc
 terraform.rc
 **/s3ls
+**/securevar.tf
