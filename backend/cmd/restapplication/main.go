@@ -8,8 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/dragtor/One2n-backend/backend/pkg/s3"
 	"github.com/gorilla/mux"
 )
 
@@ -31,7 +29,7 @@ func init() {
 }
 
 type App struct {
-	S3Access *s3.S3
+	// S3Access *s3.S3
 }
 
 func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
@@ -41,11 +39,12 @@ func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.Printf("Initializing server\n")
 	r := mux.NewRouter()
-	s3Client, err := s3.S3Service(accessKey, secretKey, token, region)
-	if err != nil {
-		log.Fatal("Falied to connect aws s3")
-	}
-	t := App{S3Access: s3Client}
+
+	// s3Client, err := s3Client.S3Service(accessKey, secretKey, token, region)
+	// if err != nil {
+	// 	log.Fatal("Falied to connect aws s3")
+	// }
+	t := App{}
 	r.HandleFunc("/list-bucket-content/{param:.*}", t.listBucketContent)
 	log.Printf("Server listening on port : %s", *servicePort)
 	http.ListenAndServe(fmt.Sprintf(":%s", *servicePort), r)
