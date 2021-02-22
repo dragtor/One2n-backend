@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/dragtor/One2n-backend/backend/pkg"
+	"github.com/dragtor/One2n-backend/backend/pkg/s3"
 	"github.com/gorilla/mux"
 )
 
@@ -41,7 +41,7 @@ func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.Printf("Initializing server\n")
 	r := mux.NewRouter()
-	s3Client, err := pkg.S3Service(accessKey, secretKey, token, region)
+	s3Client, err := s3.S3Service(accessKey, secretKey, token, region)
 	if err != nil {
 		log.Fatal("Falied to connect aws s3")
 	}
