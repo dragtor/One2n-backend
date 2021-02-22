@@ -3,6 +3,7 @@ package pkg
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -87,7 +88,7 @@ func (s3iter *AwsS3Iterator) InsertInDataStore(path string, bucket string) {
 	}
 }
 
-func (s3iter *AwsS3Iterator) GenerateS3ObjectTreeForPath(bucketList []string, path []string) (*S3DataStorageTree, error) {
+func (s3iter *AwsS3Iterator) GenerateS3ObjectTreeForPath(bucketList []string, path []string) error {
 	s3iter.StorageTree = &S3DataStorageTree{IsExist: true, MapToNextLevel: make(map[string]*S3DataStorageTree)}
 	tempPtr := (*s3iter.StorageTree)
 	for _, b := range bucketList {
@@ -102,11 +103,27 @@ func (s3iter *AwsS3Iterator) GenerateS3ObjectTreeForPath(bucketList []string, pa
 			}
 		}
 	}
-	for k, v := range s3iter.StorageTree.MapToNextLevel {
-		fmt.Println(k, v)
-	}
+	return nil
+}
 
-	return &S3DataStorageTree{}, nil
+func (s3iter *AwsS3Iterator) LsOutputFromObjectPathTree(path string, bucket string) ([]string, error) {
+	// return error for invalid path
+	cleanPath := strings.TrimRight(path, "/")
+	pathSubSection := strings.Split(cleanPath, "/")
+	tempPtr := (*s3iter.StorageTree)
+	for _, path := range pathSubSection {
+		if _, present := tempPtr.MapToNextLevel[path]; !present {
+			// if not present then path is not exist
+			return nil, errors.New("Path not exist")
+		}
+		tempPtr = (*tempPtr.MapToNextLevel[path])
+	}
+	var childDir []string
+	for k, v := range tempPtr.MapToNextLevel {
+		log.Printf("key: %s , value : %s \n", k, v)
+		childDir = append(childDir, k)
+	}
+	return childDir, nil
 }
 
 func (s3iter *AwsS3Iterator) ListDir(path string) ([]string, error) {
@@ -116,6 +133,7 @@ func (s3iter *AwsS3Iterator) ListDir(path string) ([]string, error) {
 			switch aerr.Code() {
 			default:
 				fmt.Println(aerr.Error())
+				return nil, errors.New(fmt.Sprintf("AWS Error %s", aerr.Code()))
 			}
 		}
 		return nil, errors.New(fmt.Sprintf("Failed to Fetch List of buckets %v", err.Error()))
@@ -127,7 +145,8 @@ func (s3iter *AwsS3Iterator) ListDir(path string) ([]string, error) {
 	pathList := strings.Split(path, "/")
 	if path != "" {
 		s3iter.GenerateS3ObjectTreeForPath(bucketList, pathList)
-		return []string{"hell"}, nil
+		bucketName := pathList[0]
+		return s3iter.LsOutputFromObjectPathTree(path, bucketName)
 	}
 	return bucketList, nil
 }

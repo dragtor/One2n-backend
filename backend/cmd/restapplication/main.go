@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dragtor/One2n-backend/backend/controller"
 	"github.com/dragtor/One2n-backend/backend/pkg"
 	"github.com/gorilla/mux"
 )
@@ -31,7 +32,11 @@ func init() {
 }
 
 type App struct {
-	S3Service *pkg.AwsS3Iterator
+	AppCntrl *controller.Controller
+}
+
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -41,13 +46,39 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+type HttpResponseStruct struct {
+	Contents []string `json:"contents"`
+}
+
+func convertToHttpResponse(resp *controller.ControllerResponse) *HttpResponseStruct {
+	return &HttpResponseStruct{
+		Contents: resp.LsDir,
+	}
+}
+
+func validateRequest(param string) error {
+	return nil
+}
+
 func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received request to fetch query")
 	param := mux.Vars(r)["param"]
-	fmt.Println(param)
 
-	responseData := "ok"
-	respondWithJSON(w, http.StatusOK, responseData)
+	err := validateRequest(param)
+	if err != nil {
+		log.Printf("Error : Failed to decode request data ")
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	resp, err := app.AppCntrl.CommandS3ls(param)
+	if err != nil {
+		log.Printf("Error : Failed to Fetch Info")
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	httpresp := convertToHttpResponse(resp)
+	respondWithJSON(w, http.StatusOK, httpresp)
 }
 
 func main() {
@@ -59,7 +90,8 @@ func main() {
 		// return err
 		return
 	}
-	t := App{S3Service: s3iter}
+	controller := controller.NewController(s3iter)
+	t := App{AppCntrl: controller}
 	r.HandleFunc("/list-bucket-content/{param:.*}", t.listBucketContent)
 	log.Printf("Server listening on port : %s", *servicePort)
 	http.ListenAndServe(fmt.Sprintf(":%s", *servicePort), r)
