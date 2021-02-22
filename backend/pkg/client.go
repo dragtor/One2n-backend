@@ -1,8 +1,9 @@
-package s3client
+package pkg
 
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -29,7 +30,7 @@ func NewS3Iterator(s3AccssObj *s3.S3) *AwsS3Iterator {
 	}
 }
 
-func S3Service(awsAccessKey, awsSecret, token, region string) (*s3.S3, error) {
+func NewS3Service(awsAccessKey, awsSecret, token, region string) (*AwsS3Iterator, error) {
 	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
 	_, err := creds.Get()
 	if err != nil {
@@ -37,7 +38,7 @@ func S3Service(awsAccessKey, awsSecret, token, region string) (*s3.S3, error) {
 	}
 	cfg := aws.NewConfig().WithRegion(region).WithCredentials(creds)
 	svc := s3.New(session.New(), cfg)
-	return svc, nil
+	return NewS3Iterator(svc), nil
 }
 
 type S3DataStorageTree struct {
@@ -132,19 +133,21 @@ func (s3iter *AwsS3Iterator) ListDir(path string) ([]string, error) {
 	return bucketList, nil
 }
 
-// func main() {
-
-// 	s3Obj, err := S3Service(awsAccessKey, awsSecret, token, region)
-// 	if err != nil {
-// 		fmt.Errorf("error")
-// 		// return err
-// 		return
-// 	}
-// 	s3iter := NewS3Iterator(s3Obj)
-// 	path := "dragtor-dir2/asf/asdf/asdf/sadf/asdf/sdf"
-// 	dirs, err := s3iter.ListDir(path)
-// 	if err != nil {
-// 		log.Fatal("Failed to list dir")
-// 	}
-// 	fmt.Println("main function end: ", dirs)
-// }
+func main() {
+	awsAccessKey := "AKIA3SWZ7N4NXNBU2CVD"
+	awsSecret := "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"
+	token := ""
+	region := "ap-south-1"
+	s3iter, err := NewS3Service(awsAccessKey, awsSecret, token, region)
+	if err != nil {
+		fmt.Errorf("error")
+		// return err
+		return
+	}
+	path := "dragtor-dir2/asf/asdf/asdf/sadf/asdf/sdf"
+	dirs, err := s3iter.ListDir(path)
+	if err != nil {
+		log.Fatal("Failed to list dir")
+	}
+	fmt.Println("main function end: ", dirs)
+}
