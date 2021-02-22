@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dragtor/One2n-backend/backend/constants"
 	"github.com/dragtor/One2n-backend/backend/pkg"
 	"github.com/gorilla/mux"
 )
@@ -34,12 +34,24 @@ type App struct {
 	S3Service *pkg.AwsS3Iterator
 }
 
-func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
 
+func (app *App) listBucketContent(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Received request to fetch query")
+	param := mux.Vars(r)["param"]
+	fmt.Println(param)
+
+	responseData := "ok"
+	respondWithJSON(w, http.StatusOK, responseData)
 }
 
 func main() {
-	log.Printf("Initializing server \n", constants.Hello)
+	log.Printf("Initializing server \n")
 	r := mux.NewRouter()
 	s3iter, err := pkg.NewS3Service(*awsAccessKey, *awsSecret, *token, *region)
 	if err != nil {

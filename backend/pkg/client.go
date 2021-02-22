@@ -3,7 +3,6 @@ package pkg
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -131,23 +130,4 @@ func (s3iter *AwsS3Iterator) ListDir(path string) ([]string, error) {
 		return []string{"hell"}, nil
 	}
 	return bucketList, nil
-}
-
-func main() {
-	awsAccessKey := "AKIA3SWZ7N4NXNBU2CVD"
-	awsSecret := "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"
-	token := ""
-	region := "ap-south-1"
-	s3iter, err := NewS3Service(awsAccessKey, awsSecret, token, region)
-	if err != nil {
-		fmt.Errorf("error")
-		// return err
-		return
-	}
-	path := "dragtor-dir2/asf/asdf/asdf/sadf/asdf/sdf"
-	dirs, err := s3iter.ListDir(path)
-	if err != nil {
-		log.Fatal("Failed to list dir")
-	}
-	fmt.Println("main function end: ", dirs)
 }
